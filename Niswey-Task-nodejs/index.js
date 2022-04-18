@@ -93,7 +93,7 @@ const exchangeForTokens = async (userId, exchangeProof) => {
 
     const tokens = JSON.parse(responseBody);
     refreshTokenStore[userId] = tokens.refresh_token;
-    accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.05));
+    accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
     console.log(' Received an access token and refresh token');
     return tokens.access_token;
@@ -142,7 +142,7 @@ const isAuthorized = (userId) => {
       const user_id = details.data.user
       const portal_id = details.data.hub_id
 
-      const userdata = {user_id :user_id, portal_id: portal_id}
+      const userdata = {user_id, portal_id}
       //res.render("Table",{user:userdata});
 
       const comnpanyDetail = []
@@ -158,12 +158,24 @@ const isAuthorized = (userId) => {
           const companyname = JSON.parse(JSON.stringify(company.properties.name))
           const ownername = JSON.parse(JSON.stringify(companyowner.firstName))
           
+          if(ownername != null||undefined)
+          {
+            const singleCompany = {
+              "companyname" :companyname,
+              "ownername" : ownername
+             }
+             comnpanyDetail.push(singleCompany);
+
+          }
+          else
+          {
+            const singleCompany = {
+              "companyname" :companyname,
+              "ownername" : "NA"
+             }
+             comnpanyDetail.push(singleCompany);
+          }
          
-          const singleCompany = {
-            "companyname" :companyname,
-            "ownername" : ownername
-           }
-           comnpanyDetail.push(singleCompany);
   
       }
         console.log(comnpanyDetail);
@@ -201,15 +213,26 @@ const isAuthorized = (userId) => {
         const companyowner = await getOwnerName(aaccessToken,company.properties.hubspot_owner_id) 
            
           const companyname = JSON.parse(JSON.stringify(company.properties.name))
-          const ownername = JSON.parse(JSON.stringify(companyowner.firstName))
+          //const ownername = JSON.parse(JSON.stringify(companyowner.firstName))
           
          
-          const singleCompany = {
-            "companyname" :companyname,
-            "ownername" : ownername
-           }
-           comnpanyDetail.push(singleCompany);
-  
+          if(typeof(companyowner) != "undefined")
+          {
+            const singleCompany = {
+              "companyname" :companyname,
+              "ownername" : JSON.parse(JSON.stringify(companyowner.firstName))
+             }
+             comnpanyDetail.push(singleCompany);
+
+          }
+          else
+          {
+            const singleCompany = {
+              "companyname" :companyname,
+              "ownername" : "NA"
+             }
+             comnpanyDetail.push(singleCompany);
+          }
       }
         console.log(comnpanyDetail);
   
@@ -237,7 +260,8 @@ const isAuthorized = (userId) => {
 
   app.get("/logout", function(req, res) {
     req.session.destroy(() => {
-     res.redirect("/jatin/install"); 
+      accessTokenCache.flushAll();
+     res.redirect("/jatin"); 
    });
   })
 
