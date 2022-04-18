@@ -228,7 +228,7 @@ const isAuthorized = (userId) => {
       
         }
         else {
-            res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+            res.write(`<a href="/jatin/install"><h3>Install the app</h3></a>`);
           }
           res.end();
   })
@@ -237,7 +237,7 @@ const isAuthorized = (userId) => {
 
   app.get("/logout", function(req, res) {
     req.session.destroy(() => {
-     res.redirect("/jatin"); 
+     res.redirect("/jatin/install"); 
    });
   })
 
