@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Company  </title>
+    <style>
+        #show
+        {
+            padding:0;
+            margin: 0;
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+            background: white;
+            background: white;
+        }
+
+        #show th, #show td{
+        padding: 13px;
+        background-color: #33eb22;
+        }
+
+        #logout
+        {
+            align-items: right;
+        }
+    </style>
+
+
+<script>
+
+    function Logout()
+    {
+        window.location = "/logout";
+
+    }
+
+
+    function Next()
+    {
+        window.location = "/next"
+    }
+</script>
+
+    
+</head>
+    <body>
+        <div className="logout">
+            <label for="user">Email - </label>
+        <textview id="user" ><%= user.user_id%></textview>
+        <br>
+        <label for="portalid">Portal ID - </label>
+        <textview id="portalid" ><%= user.portal_id%></textview>
+        <br>
+        </div>
+
+        <button id="logout" onclick="Logout()">Logout</button>
+
+        <div  id="table">
+
+        <table id="show">
+        <br>
+        <tr>
+        <th>Company Name</th>
+        <th>Owner Name</th>
+        </tr>
+    </tr>
+
+    <%  companies.forEach(function(item){ %>
+        <tr>
+            <th><%=item.companyname%></th>
+            <th><%=item.ownername%></th>
+        
+            
+            </tr>
+        
+      <%  }) %>
+        </table>
+        <div>
+        <button id="next" onclick="Next()">Next</button>
+    </div>
+    </div>
+
+        
+
+</body>
+</html>
