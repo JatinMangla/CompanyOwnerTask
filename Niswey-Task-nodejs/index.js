@@ -30,7 +30,7 @@ if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-const REDIRECT_URI = `http://localhost:${PORT}/oauth-callback`;
+const REDIRECT_URI = `https://migration.niswey.net/jatin/oauth-callback`;
 
 
 //session 
@@ -42,7 +42,7 @@ app.use(session({
 
 
 // authorize URL
-const authUrl =`https://app.hubspot.com/oauth/authorize?client_id=0f64724f-0a95-499b-910d-909096b149f2&redirect_uri=http://localhost:3002/oauth-callback&scope=crm.lists.read%20crm.objects.contacts.read%20crm.objects.contacts.write%20crm.objects.companies.write%20crm.lists.write%20crm.objects.companies.read%20crm.objects.deals.read%20crm.objects.deals.write%20crm.objects.owners.read`
+const authUrl =`https://app.hubspot.com/oauth/authorize?client_id=0f64724f-0a95-499b-910d-909096b149f2&redirect_uri=https://migration.niswey.net/jatin/oauth-callback&scope=crm.lists.read%20crm.objects.contacts.read%20crm.objects.contacts.write%20crm.objects.companies.write%20crm.lists.write%20crm.objects.companies.read%20crm.objects.deals.read%20crm.objects.deals.write%20crm.objects.owners.read`
 
 // install app
 
@@ -76,7 +76,7 @@ app.get('/oauth-callback', async (req, res) => {
       return res.redirect(`/error?msg=${token.message}`);
     }
 
-    res.redirect(`/`);
+    res.redirect(`/jatin`);
   }
 });
 
@@ -172,7 +172,7 @@ const isAuthorized = (userId) => {
       
         }
         else {
-            res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+            res.write(`<a href="/jatin/install"><h3>Install the app</h3></a>`);
           }
           res.end();
   })
@@ -237,7 +237,7 @@ const isAuthorized = (userId) => {
 
   app.get("/logout", function(req, res) {
     req.session.destroy(() => {
-     res.redirect("/"); 
+     res.redirect("/jatin"); 
    });
   })
 
