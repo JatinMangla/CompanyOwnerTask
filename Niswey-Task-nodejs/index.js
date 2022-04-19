@@ -142,6 +142,7 @@ app.get('/', async (req, res) => {
 
       const userdata = {user_id :user_id, portal_id: portal_id};
       userCache.set(req.sessionID,userdata,1800)
+      nextCache.set(req.sessionID,"0", 1800);
     
     res.render("home",{userdata:userCache.get(req.sessionID)});
     
@@ -180,8 +181,8 @@ app.get('/', async (req, res) => {
         nextCache.set(req.sessionID,items.next.after, 1800);
       }
       else{
-        nextCache.set(req.sessionID,undefined, 1800);
-      
+        nextCache.set(req.sessionID,nextCache.get(req.sessionID), 1800);
+        var disp = "End of the records"
       }
 
      var company ;
@@ -191,7 +192,7 @@ app.get('/', async (req, res) => {
         if(company.properties.hubspot_owner_id != undefined||null)
         {
           const companyowner = await getOwnerName(aaccessToken,company.properties.hubspot_owner_id) 
-          console.log(companyowner)
+
           const companyname = company.properties.name
           const ownername = companyowner.firstName
           //console.log(ownername)
@@ -218,7 +219,7 @@ app.get('/', async (req, res) => {
       }
         console.log(comnpanyDetail);
         
-        res.render("Table",{companies:comnpanyDetail,user:userCache.get(req.sessionID)})
+        res.render("Table",{companies:comnpanyDetail,user:userCache.get(req.sessionID),display:disp})
       
         }
         else {
