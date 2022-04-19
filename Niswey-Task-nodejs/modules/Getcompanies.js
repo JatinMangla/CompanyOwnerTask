@@ -5,7 +5,6 @@ const hubspot = require('@hubspot/api-client')
     const hubspotClient = new hubspot.Client({"accessToken": aaccessToken});
   
       const limit = 5;
-  const after = undefined;
   const properties = [
             " hubspot_owner_id",
             "name"
@@ -13,8 +12,8 @@ const hubspot = require('@hubspot/api-client')
   
   
   try {
-    const apiResponse = await hubspotClient.crm.companies.basicApi.getPage(limit, after, properties);
-    
+    const apiResponse = await hubspotClient.crm.companies.basicApi.getPage(limit, properties);
+
     return JSON.parse(JSON.stringify(apiResponse,null,2));
  } 
     catch (e) {

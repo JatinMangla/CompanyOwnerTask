@@ -6,7 +6,6 @@ const NodeCache = require('node-cache');
 const opn = require('open');
 const app = express();
 const bodyParser=require("body-parser");
-const hubspot = require('@hubspot/api-client')
 const axios = require('axios')
 require('./modules/GetOwners')
 require('./modules/Getcompanies')
@@ -16,7 +15,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
 const PORT = 3002;
-var nextdata=""
+global.nextdata=""
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -148,8 +147,9 @@ const isAuthorized = (userId) => {
       const comnpanyDetail = []
       const companies = await getCompanies(aaccessToken);
       const check = companies.results
-      nextdata = companies.paging.next.after
-      
+      const items = companies.paging
+      nextdata = items.next.after
+
      var company ;
       for (company of check)
       {

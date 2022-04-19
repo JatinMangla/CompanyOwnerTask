@@ -5,7 +5,7 @@ module.exports = getOwnerName = async (access_token,id) =>{
     const hubspotClient = new hubspot.Client({"accessToken" : access_token});
   
     const ownerId = id;
-    const idProperty = "id";
+    const idProperty = "userid";
     const archived = false;
   
   try {
