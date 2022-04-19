@@ -12,10 +12,12 @@ require('./modules/Getcompanies')
 require('./modules/Getcompaniesnext')
 
 app.set('view engine', 'ejs');
+app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 
 const PORT = 3002;
-global.nextdata=""
+const nextCache = new NodeCache({ deleteOnExpire: true });
+const userCache = new NodeCache({ deleteOnExpire: true });
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -129,58 +131,94 @@ const isAuthorized = (userId) => {
 };
 
 
+app.get('/', async (req, res) => {
+
+     
+  if (isAuthorized(req.sessionID)) {
+    const accessToken = await getAccessToken(req.sessionID);
+    const details = await axios.get(`https://api.hubapi.com/oauth/v1/access-tokens/${accessToken}`)
+      const user_id = details.data.user
+      const portal_id = details.data.hub_id
+
+      const userdata = {user_id :user_id, portal_id: portal_id};
+      userCache.set(req.sessionID,userdata,1800)
+    
+    res.render("home",{userdata:userCache.get(req.sessionID)});
+    
+  } else {
+    res.write(`<a href="/jatin/install"><h3>Install the app</h3></a>`);
+  }
+  res.end();
+});
+
+
 //get companies name and owner name
 
-  app.get('/',async(req,res)=>{
+  app.get('/company',async(req,res)=>{
     res.setHeader('Content-Type', 'text/html');
     if (isAuthorized(req.sessionID)) {
   
       const aaccessToken = await getAccessToken(req.sessionID);
 
-      const details = await axios.get(`https://api.hubapi.com/oauth/v1/access-tokens/${aaccessToken}`)
-      const user_id = details.data.user
-      const portal_id = details.data.hub_id
-
-      const userdata = {user_id, portal_id}
-      //res.render("Table",{user:userdata});
-
       const comnpanyDetail = []
-      const companies = await getCompanies(aaccessToken);
+      if (!nextCache.get(req.sessionID)) {
+
+        var companies = await getCompanies(aaccessToken,undefined);
+             }
+             else
+
+            {
+              var companies = await getCompanies(aaccessToken,nextCache.get(req.sessionID));
+            }
+  
+      
+      //console.log(companies)
       const check = companies.results
+      //console.log(check)
       const items = companies.paging
-      nextdata = items.next.after
+      if(items!=undefined){
+        nextCache.set(req.sessionID,items.next.after, 1800);
+      }
+      else{
+        nextCache.set(req.sessionID,undefined, 1800);
+      
+      }
 
      var company ;
       for (company of check)
       {
-        const companyowner = await getOwnerName(aaccessToken,company.properties.hubspot_owner_id) 
-           
-          const companyname = JSON.parse(JSON.stringify(company.properties.name))
-          const ownername = JSON.parse(JSON.stringify(companyowner.firstName))
-          
-          if(ownername != null||undefined)
-          {
-            const singleCompany = {
-              "companyname" :companyname,
-              "ownername" : ownername
-             }
-             comnpanyDetail.push(singleCompany);
 
-          }
-          else
-          {
-            const singleCompany = {
-              "companyname" :companyname,
-              "ownername" : "NA"
-             }
-             comnpanyDetail.push(singleCompany);
-          }
+        if(company.properties.hubspot_owner_id != undefined||null)
+        {
+          const companyowner = await getOwnerName(aaccessToken,company.properties.hubspot_owner_id) 
+          console.log(companyowner)
+          const companyname = company.properties.name
+          const ownername = companyowner.firstName
+          //console.log(ownername)
+          
+          const singleCompany = {
+            "companyname" :companyname,
+            "ownername" : ownername
+           }
+           comnpanyDetail.push(singleCompany);
+
+        }
+        else
+        {
+          const companyname = company.properties.name
+          const singleCompany = {
+            "companyname" :companyname,
+            "ownername" : "NA"
+           }
+           comnpanyDetail.push(singleCompany);
+        }
+       
          
   
       }
         console.log(comnpanyDetail);
-  
-        res.render("Table",{companies:comnpanyDetail,user:userdata})
+        
+        res.render("Table",{companies:comnpanyDetail,user:userCache.get(req.sessionID)})
       
         }
         else {
@@ -188,74 +226,6 @@ const isAuthorized = (userId) => {
           }
           res.end();
   })
-
-  app.get('/next',async(req,res)=>{
-    res.setHeader('Content-Type', 'text/html');
-    if (isAuthorized(req.sessionID)) {
-  
-      const aaccessToken = await getAccessToken(req.sessionID);
-
-      const details = await axios.get(`https://api.hubapi.com/oauth/v1/access-tokens/${aaccessToken}`)
-      const user_id = details.data.user
-      const portal_id = details.data.hub_id
-
-      const userdata = {user_id :user_id, portal_id: portal_id}
-      
-      const comnpanyDetail = []
-      const last = nextdata
-      const companies = await getCompaniesnext(aaccessToken,nextdata);
-      const check = companies.results
-      // console.log(value)
-
-      var company ;
-      for (company of check)
-      {
-        const companyowner = await getOwnerName(aaccessToken,company.properties.hubspot_owner_id) 
-           
-          const companyname = JSON.parse(JSON.stringify(company.properties.name))
-          //const ownername = JSON.parse(JSON.stringify(companyowner.firstName))
-          
-         
-          if(typeof(companyowner) != "undefined")
-          {
-            const singleCompany = {
-              "companyname" :companyname,
-              "ownername" : JSON.parse(JSON.stringify(companyowner.firstName))
-             }
-             comnpanyDetail.push(singleCompany);
-
-          }
-          else
-          {
-            const singleCompany = {
-              "companyname" :companyname,
-              "ownername" : "NA"
-             }
-             comnpanyDetail.push(singleCompany);
-          }
-      }
-        console.log(comnpanyDetail);
-  
-        res.render("Table",{companies:comnpanyDetail,user:userdata})
-
-        //nextdata =  companies.paging.next.after
-       
-       
-       if(typeof(companies.paging) != "undefined")
-       {
-            nextdata =  companies.paging.next.after
-       }
-       else{
-         nextdata = last
-       }
-      
-        }
-        else {
-            res.write(`<a href="/jatin/install"><h3>Install the app</h3></a>`);
-          }
-          res.end();
-  })
-
 
 
   app.get("/logout", function(req, res) {
